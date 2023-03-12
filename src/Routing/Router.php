@@ -59,22 +59,24 @@ class Router
         return $this->routes[$url] ?? null;
     }
 
-    public function execute()
+    /**
+     * @param string $requestUri
+     * @param string $httpMethod
+     * @return void
+     * @throws RouteNotFoundException
+     */
+    public function execute(string $requestUri, string $httpMethod)
     {
-        $url = $_SERVER['REQUEST_URI'];
-        $route = $this->getRoute($url);
+        $route = $this->getRoute($requestUri, $httpMethod);
 
-        if ($route) {
-            $controllerClass = $route['controllerClass'];
-            $controllerMethod = $route['controllerMethod'];
-
-            // Instantiate the controller class
-            $controller = new $controllerClass($this->twig);
-
-            // Call the controller method
-            $controller->$controllerMethod();
-        } else {
-            throw new RouteNotFoundException($url, 404);
+        if ($route === null) {
+            throw new RouteNotFoundException($requestUri, $httpMethod);
         }
+
+        $controller = $route['controller'];
+        $method = $route['method'];
+
+        $controllerInstance = new $controller();
+        $controllerInstance->$method();
     }
 }
