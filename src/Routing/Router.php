@@ -2,18 +2,18 @@
 
 namespace App\Routing;
 
+use Twig\Environment;
 use App\Controller\IndexController;
 use App\Controller\PageController;
-use Twig\Environment;
 
 class Router
 {
-    private array $routes = [];
-    private Environment $twig;
 
-    public function __construct(Environment $twig)
+
+    private array $routes = [];
+
+    public function __construct(private Environment $twig)
     {
-        $this->twig = $twig;
         $this->addRoute(
             'homepage',
             '/',
