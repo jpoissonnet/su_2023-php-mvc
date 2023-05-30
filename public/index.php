@@ -6,18 +6,19 @@ use App\Controller\ContactController;
 use App\Controller\IndexController;
 use App\Routing\RouteNotFoundException;
 use App\Routing\Router;
+use Symfony\Component\Dotenv\Dotenv;
 
 $dotenv = new Dotenv();
 $dotenv->loadEnv(__DIR__ . '/../.env');
 
 // DB
 [
-    'DB_HOST'     => $host,
-    'DB_PORT'     => $port,
-    'DB_NAME'     => $dbname,
-    'DB_CHARSET'  => $charset,
-    'DB_USER'     => $user,
-    'DB_PASSWORD' => $password
+  'DB_HOST'     => $host,
+  'DB_PORT'     => $port,
+  'DB_NAME'     => $dbname,
+  'DB_CHARSET'  => $charset,
+  'DB_USER'     => $user,
+  'DB_PASSWORD' => $password
 ] = $_ENV;
 
 $dsn = "mysql:dbname=$dbname;host=$host:$port;charset=$charset";
