@@ -41,7 +41,10 @@ $twig = new Environment($loader, [
 ]);
 
 // Appeler un routeur pour lui transférer la requête
-$router = new Router($twig);
+$router = new Router([
+  Environment::class => $twig,
+  PDO::class => $pdo
+]);
 $router->addRoute(
   'homepage',
   '/',
