@@ -4,8 +4,8 @@ namespace App\Controller;
 
 class IndexController extends AbstractController
 {
-  public function home(): string
+  public function home()
   {
-    return $this->twig->render('index.html.twig');
+    echo $this->twig->render('index.html.twig');
   }
 }
