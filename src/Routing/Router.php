@@ -2,6 +2,8 @@
 
 namespace App\Routing;
 
+use App\Controller\IndexController;
+use App\Controller\PageController;
 use Twig\Environment;
 
 class Router
@@ -12,6 +14,13 @@ class Router
     public function __construct(Environment $twig)
     {
         $this->twig = $twig;
+        $this->addRoute(
+            'homepage',
+            '/',
+            'GET',
+            IndexController::class,
+            'home'
+        );
         $this->loadRoutes();
     }
 
@@ -23,12 +32,8 @@ class Router
             if ($file->isDir()) {
                 continue;
             }
-
-            $filePath = $file->getPathname();
-            $relativePath = substr($filePath, strpos($filePath, 'pages') + 6);
-            $url = rtrim($relativePath, '.php');
-
-            $this->addRoute($url, $url, 'GET', $filePath, 'index');
+            $url = rtrim($file->getBaseName(), '.php');
+            $this->addRoute($url, "/".$url, 'GET', PageController::class, 'response');
         }
     }
 
@@ -69,7 +74,7 @@ class Router
             // Call the controller method
             $controller->$controllerMethod();
         } else {
-            // Route not found, handle accordingly (e.g., show a 404 page)
+            throw new RouteNotFoundException($url, 404);
         }
     }
 }
