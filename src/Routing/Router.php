@@ -9,41 +9,62 @@ use App\Controller\PageController;
 
 class Router
 {
-  public function __construct(
-    private array $services
-  ) {
-      $this->addRoute(
-          'homepage',
-          '/',
-          'GET',
-          IndexController::class,
-          'home'
-      );
-      $this->loadRoutes();
-  }
-
-  private array $routes = [];
-
-  public function addRoute(
-    string $name,
-    string $url,
-    string $httpMethod,
-    string $controllerClass,
-    string $controllerMethod
-  ) {
-    $this->routes[] = [
-      'name' => $name,
-      'url' => $url,
-      'http_method' => $httpMethod,
-      'controller' => $controllerClass,
-      'method' => $controllerMethod
-    ];
-  }
-
-    public function getRoute(string $url): ?array
+    public function __construct(
+        private array $services
+    )
     {
-        return $this->routes[$url] ?? null;
+        $this->addRoute(
+            'homepage',
+            '/',
+            'GET',
+            IndexController::class,
+            'home'
+        );
+        $this->loadRoutes();
     }
+
+    private function loadRoutes()
+    {
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator('pages'));
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                continue;
+            }
+            $url = rtrim($file->getBaseName(), '.php');
+            $this->addRoute($url, "/" . $url, 'GET', PageController::class, 'response');
+        }
+    }
+
+    private array $routes = [];
+
+    public function addRoute(
+        string $name,
+        string $url,
+        string $httpMethod,
+        string $controllerClass,
+        string $controllerMethod
+    )
+    {
+        $this->routes[] = [
+            'name' => $name,
+            'url' => $url,
+            'http_method' => $httpMethod,
+            'controller' => $controllerClass,
+            'method' => $controllerMethod
+        ];
+    }
+
+    public function getRoute(string $uri, string $httpMethod): ?array
+    {
+        foreach ($this->routes as $route) {
+            if ($route['url'] === $uri && $route['http_method'] === $httpMethod) {
+                return $route;
+            }
+        }
+
+        return null;
+    }
+
 
     /**
      * @param string $requestUri
@@ -71,31 +92,31 @@ class Router
     }
 
     /**
-   * Get an array containing services instances guessed from method signature
-   *
-   * @param string $method Format : FQCN::method
-   * @return array The services to inject
-   */
-  private function getMethodParams(string $method): array
-  {
-    $params = [];
+     * Get an array containing services instances guessed from method signature
+     *
+     * @param string $method Format : FQCN::method
+     * @return array The services to inject
+     */
+    private function getMethodParams(string $method): array
+    {
+        $params = [];
 
-    try {
-      $methodInfos = new ReflectionMethod($method);
-    } catch (ReflectionException $e) {
-      return [];
+        try {
+            $methodInfos = new ReflectionMethod($method);
+        } catch (ReflectionException $e) {
+            return [];
+        }
+        $methodParams = $methodInfos->getParameters();
+
+        foreach ($methodParams as $methodParam) {
+            $paramType = $methodParam->getType();
+            $paramTypeName = $paramType->getName();
+
+            if (array_key_exists($paramTypeName, $this->services)) {
+                $params[] = $this->services[$paramTypeName];
+            }
+        }
+
+        return $params;
     }
-    $methodParams = $methodInfos->getParameters();
-
-    foreach ($methodParams as $methodParam) {
-      $paramType = $methodParam->getType();
-      $paramTypeName = $paramType->getName();
-
-      if (array_key_exists($paramTypeName, $this->services)) {
-        $params[] = $this->services[$paramTypeName];
-      }
-    }
-
-    return $params;
-  }
 }

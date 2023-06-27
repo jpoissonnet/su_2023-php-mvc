@@ -25,13 +25,13 @@ $dotenv->loadEnv(__DIR__ . '/../.env');
 
 $dsn = "mysql:dbname=$dbname;host=$host:$port;charset=$charset";
 
-try {
+/*try {
     $pdo = new PDO($dsn, $user, $password);
     var_dump($pdo);
 } catch (PDOException $ex) {
     echo "Erreur lors de la connexion à la base de données : " . $ex->getMessage();
     exit;
-}
+}*/
 
 // Twig
 $loader = new FilesystemLoader(__DIR__ . '/../templates/');
@@ -43,22 +43,7 @@ $twig = new Environment($loader, [
 // Appeler un routeur pour lui transférer la requête
 $router = new Router([
   Environment::class => $twig,
-  PDO::class => $pdo
 ]);
-$router->addRoute(
-  'homepage',
-  '/',
-  'GET',
-  IndexController::class,
-  'home'
-);
-$router->addRoute(
-  'contact_page',
-  '/contact',
-  'GET',
-  ContactController::class,
-  'contact'
-);
 
 try {
   $router->execute($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
