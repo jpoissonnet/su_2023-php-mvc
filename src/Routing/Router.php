@@ -2,6 +2,7 @@
 
 namespace App\Routing;
 
+use App\Middleware\Guard;
 use ReflectionException;
 use ReflectionMethod;
 use App\Controller\IndexController;
@@ -42,16 +43,25 @@ class Router
         string $url,
         string $httpMethod,
         string $controllerClass,
-        string $controllerMethod
+        string $controllerMethod,
+        int $guardLevel = 0
     )
     {
-        $this->routes[] = [
+        $newRoute = [
             'name' => $name,
             'url' => $url,
             'http_method' => $httpMethod,
             'controller' => $controllerClass,
-            'method' => $controllerMethod
+            'method' => $controllerMethod,
+            'guardLevel' => $guardLevel
         ];
+
+        $this->routes[] = $newRoute;
+
+        if (isset($this->services["guard"]) && $this->services["guard"] instanceof Guard) {
+            $guard = $this->services["guard"];
+            $guard->addRoute($newRoute);
+        }
     }
 
     public function getRoute(string $uri, string $httpMethod): ?array
@@ -80,8 +90,13 @@ class Router
             throw new RouteNotFoundException($requestUri, $httpMethod);
         }
 
-
         $controllerClass = $route['controller'];
+
+        if (isset($this->services[Guard::class]) && $this->services[Guard::class] instanceof Guard) {
+            $guard = $this->services[Guard::class];
+            $guard->check($route);
+        }
+
         $method = $route['method'];
 
         $constructorParams = $this->getMethodParams($controllerClass . '::__construct');
@@ -119,4 +134,5 @@ class Router
 
         return $params;
     }
+
 }
