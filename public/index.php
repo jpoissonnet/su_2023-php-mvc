@@ -52,31 +52,9 @@ $twig = new Environment($loader, [
 $serviceContainer = new Container();
 $serviceContainer
     ->set(Environment::class, $twig)
-    ->set(Guard::class, new Guard($serviceContainer));
+    ->set(Guard::class, new Guard());
 
-// Appeler un routeur pour lui transférer la requête
 $router = new Router($serviceContainer);
-$router->addRoute(
-    'homepage',
-    '/',
-    'GET',
-    IndexController::class,
-    'home'
-);
-$router->addRoute(
-    'contact_page',
-    '/contact',
-    'GET',
-    ContactController::class,
-    'contact'
-);
-$router->addRoute(
-    'user_create',
-    '/user/create',
-    'GET',
-    UserController::class,
-    'create'
-);
 
 if (php_sapi_name() === 'cli') {
     return;

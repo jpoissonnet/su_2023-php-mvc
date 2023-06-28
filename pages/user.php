@@ -1,3 +1,3 @@
 <?php
 
-echo "USER PAGE";
+echo $_SESSION["guardLevel"];

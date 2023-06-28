@@ -43,7 +43,7 @@ class Router
           'guardLevel' => $guardLevel
     ];
       $this->routes[] = $newRoute;
-
+      $this->container->get(Guard::class)->addRoute($newRoute);
   }
 
     private function loadRoutes()
@@ -84,7 +84,6 @@ class Router
     }
 
         $controllerClass = $route['controller'];
-
         if($this->container->has(Guard::class)) {
             $guard = $this->container->get(Guard::class);
             $guard->check($route);
