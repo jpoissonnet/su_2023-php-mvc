@@ -5,7 +5,6 @@ namespace App\Middleware;
 
 class Guard
 {
-
     private readonly array $routes;
     private int $guardLevel = 0;
 

@@ -2,17 +2,16 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 if (
-  php_sapi_name() !== 'cli' && // Environnement d'exécution != console
-  preg_match('/\.(ico|png|jpg|jpeg|css|js|gif)$/', $_SERVER['REQUEST_URI'])
+    php_sapi_name() !== 'cli' && // Environnement d'exécution != console
+    preg_match('/\.(ico|png|jpg|jpeg|css|js|gif)$/', $_SERVER['REQUEST_URI'])
 ) {
-  return false;
+    return false;
 }
 
 // Initialisation de certaines choses
 use App\Controller\ContactController;
 use App\Controller\IndexController;
 use App\Middleware\Guard;
-use App\Controller\UserController;
 use App\DependencyInjection\Container;
 use App\Routing\RouteNotFoundException;
 use App\Routing\Router;
@@ -52,35 +51,35 @@ $twig = new Environment($loader, [
 
 $serviceContainer = new Container();
 $serviceContainer
-  ->set(Environment::class, $twig)
-  ->set(EntityManager::class, $entityManager);
+    ->set(Environment::class, $twig)
+    ->set(Guard::class, new Guard($serviceContainer));
 
 // Appeler un routeur pour lui transférer la requête
 $router = new Router($serviceContainer);
 $router->addRoute(
-  'homepage',
-  '/',
-  'GET',
-  IndexController::class,
-  'home'
+    'homepage',
+    '/',
+    'GET',
+    IndexController::class,
+    'home'
 );
 $router->addRoute(
-  'contact_page',
-  '/contact',
-  'GET',
-  ContactController::class,
-  'contact'
+    'contact_page',
+    '/contact',
+    'GET',
+    ContactController::class,
+    'contact'
 );
 $router->addRoute(
-  'user_create',
-  '/user/create',
-  'GET',
-  UserController::class,
-  'create'
+    'user_create',
+    '/user/create',
+    'GET',
+    UserController::class,
+    'create'
 );
 
 if (php_sapi_name() === 'cli') {
-  return;
+    return;
 }
 
 try {

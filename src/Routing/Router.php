@@ -12,7 +12,7 @@ use ReflectionMethod;
 class Router
 {
   public function __construct(
-    private ContainerInterface $container
+    private readonly ContainerInterface $container
   ) {
       $this->addRoute(
           'homepage',
@@ -44,7 +44,6 @@ class Router
     ];
       $this->routes[] = $newRoute;
 
-      $guardService = $container->get(Guard::class)
   }
 
     private function loadRoutes()
@@ -86,8 +85,8 @@ class Router
 
         $controllerClass = $route['controller'];
 
-        if (isset($this->services[Guard::class]) && $this->services[Guard::class] instanceof Guard) {
-            $guard = $this->services[Guard::class];
+        if($this->container->has(Guard::class)) {
+            $guard = $this->container->get(Guard::class);
             $guard->check($route);
         }
 
@@ -120,7 +119,7 @@ class Router
     foreach ($methodParams as $methodParam) {
       $paramType = $methodParam->getType();
       $paramTypeName = $paramType->getName();
-      $params[] = $this->container->get($paramTypeName);
+      $params[] = $this->container->has($paramTypeName) ? $this->container->get($paramTypeName) : null;
     }
 
     return $params;
