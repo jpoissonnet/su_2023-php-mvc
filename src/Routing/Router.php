@@ -87,7 +87,8 @@ class Router
 
         $method = $route['method'];
 
-    $controllerInstance = new $controllerClass();
+    $controllerInstance = new $controllerClass($this->container);
+
     $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
     echo $controllerInstance->$method(...$controllerParams);
   }

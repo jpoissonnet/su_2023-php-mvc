@@ -6,7 +6,7 @@ use App\Routing\Attribute\Route;
 
 class ContactController
 {
-  #[Route("/contact", name: "contact_page")]
+  #[Route("/contact", name: "contact_page", guardLevel: 3)]
   public function contact()
   {
     echo "Page de contact";
