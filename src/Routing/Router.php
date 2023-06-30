@@ -2,26 +2,22 @@
 
 namespace App\Routing;
 
-use App\Controller\IndexController;
 use App\Controller\PageController;
 use App\Middleware\Guard;
+use App\Routing\Attribute\Route;
+use App\Utils\Filesystem;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 
 class Router
 {
+  private const CONTROLLERS_GLOB_PATH = __DIR__ . "/../Controller/*Controller.php";
+
   public function __construct(
-    private readonly ContainerInterface $container
+    private ContainerInterface $container
   ) {
-      $this->addRoute(
-          'homepage',
-          '/',
-          'GET',
-          IndexController::class,
-          'home'
-      );
-      $this->loadRoutes();
   }
 
   private array $routes = [];
@@ -40,7 +36,7 @@ class Router
       'http_method' => $httpMethod,
       'controller' => $controllerClass,
       'method' => $controllerMethod,
-          'guardLevel' => $guardLevel
+      'guardLevel' => $guardLevel
     ];
       $this->routes[] = $newRoute;
       $this->container->get(Guard::class)->addRoute($newRoute);
@@ -118,9 +114,53 @@ class Router
     foreach ($methodParams as $methodParam) {
       $paramType = $methodParam->getType();
       $paramTypeName = $paramType->getName();
-      $params[] = $this->container->has($paramTypeName) ? $this->container->get($paramTypeName) : null;
+      $params[] = $this->container->get($paramTypeName);
     }
 
     return $params;
+  }
+
+  public function registerRoutes(): void
+  {
+      /*CUSTOM ROUTES*/
+      $this->loadRoutes();
+
+
+    // Explorer le dossier des classes de contrôleurs
+    // Pour chacun d'eux, enregistrer les méthodes
+    // donc les contrôleurs portant un attribut Route
+    $classNames = Filesystem::getClassNames(self::CONTROLLERS_GLOB_PATH);
+
+    foreach ($classNames as $class) {
+      $fqcn = "App\\Controller\\" . $class;
+      $classInfos = new ReflectionClass($fqcn);
+
+      if ($classInfos->isAbstract()) {
+        continue;
+      }
+
+      $methods = $classInfos->getMethods(ReflectionMethod::IS_PUBLIC);
+
+      foreach ($methods as $method) {
+        if ($method->isConstructor()) {
+          continue;
+        }
+
+        $attributes = $method->getAttributes(Route::class);
+
+        if (!empty($attributes)) {
+          $routeAttribute = $attributes[0];
+          /** @var Route */
+          $routeInstance = $routeAttribute->newInstance();
+          $this->addRoute(
+            $routeInstance->getName(),
+            $routeInstance->getPath(),
+            $routeInstance->getHttpMethod(),
+            $fqcn,
+            $method->getName()
+          );
+        }
+      }
+    }
   }
 }
