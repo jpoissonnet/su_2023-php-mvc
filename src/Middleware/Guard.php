@@ -21,6 +21,11 @@ class Guard
         return $this->guardLevel;
     }
 
+    public function setSessionGuardLevel(int $newLevel){
+        $this->guardLevel = $newLevel;
+        $_SESSION["guardLevel"] = $newLevel;
+    }
+
     public function check($route)
     {
 

@@ -57,7 +57,8 @@ class Router
   public function getRoute(string $uri, string $httpMethod): ?array
   {
     foreach ($this->routes as $route) {
-      if ($route['url'] === $uri && $route['http_method'] === $httpMethod) {
+      if ($route['url'] === parse_url($uri)['path'] && $route['http_method'] === $httpMethod) {
+
         return $route;
       }
     }
@@ -74,7 +75,6 @@ class Router
   public function execute(string $requestUri, string $httpMethod)
   {
     $route = $this->getRoute($requestUri, $httpMethod);
-
     if ($route === null) {
       throw new RouteNotFoundException($requestUri, $httpMethod);
     }
@@ -87,9 +87,7 @@ class Router
 
         $method = $route['method'];
 
-    $constructorParams = $this->getMethodParams($controllerClass . '::__construct');
-    $controllerInstance = new $controllerClass(...$constructorParams);
-
+    $controllerInstance = new $controllerClass();
     $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
     echo $controllerInstance->$method(...$controllerParams);
   }
@@ -150,14 +148,15 @@ class Router
 
         if (!empty($attributes)) {
           $routeAttribute = $attributes[0];
-          /** @var Route */
+          /** @var Route $routeAttribute */
           $routeInstance = $routeAttribute->newInstance();
           $this->addRoute(
             $routeInstance->getName(),
             $routeInstance->getPath(),
             $routeInstance->getHttpMethod(),
             $fqcn,
-            $method->getName()
+            $method->getName(),
+            $routeInstance->getGuardLevel()
           );
         }
       }

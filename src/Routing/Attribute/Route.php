@@ -10,7 +10,8 @@ class Route
   public function __construct(
     private string $path,
     private string $name = "default_name",
-    private string $httpMethod = "GET"
+    private string $httpMethod = "GET",
+    private int $guardLevel = 0
   ) {
   }
 
@@ -28,4 +29,11 @@ class Route
   {
     return $this->httpMethod;
   }
+
+  public function getGuardLevel(): string
+  {
+    return $this->guardLevel;
+  }
+
+
 }
