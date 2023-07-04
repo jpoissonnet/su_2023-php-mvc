@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Routing\Attribute\Route;
+use Twig\Environment;
 
 class IndexController extends AbstractController
 {
@@ -10,6 +11,6 @@ class IndexController extends AbstractController
   #[Route("/", name: "homepage")]
   public function home()
   {
-    echo $this->twig->render('index.html.twig');
+    echo $this->container->get(Environment::class)->render('index.html.twig');
   }
 }

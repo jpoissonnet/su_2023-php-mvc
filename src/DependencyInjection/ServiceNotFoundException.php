@@ -7,8 +7,8 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class ServiceNotFoundException extends InvalidArgumentException implements NotFoundExceptionInterface
 {
-  public function __construct(string $id)
-  {
-    $this->message = "Le service $id n'existe pas";
-  }
+    public function __construct(string $id)
+    {
+        $this->message = "Le service $id n'existe pas";
+    }
 }

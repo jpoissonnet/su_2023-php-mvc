@@ -11,11 +11,11 @@ class ParamsController extends AbstractController
     public function test()
     {
         echo "Page de test";
-        if(isset($_REQUEST["guardLevel"])){
+        if (isset($_REQUEST["guardLevel"])) {
             session_start();
             $this->container->get(Guard::class)->setSessionGuardLevel($_REQUEST["guardLevel"]);
-            echo "<br>guardLevel set to ".$_REQUEST["guardLevel"]."<br>";
+            echo "<br>guardLevel set to " . $_REQUEST["guardLevel"] . "<br>";
         }
-            echo "<br>guardLevel is currently ".($_SESSION["guardLevel"] ?? "unset")."<br>";
+        echo "<br>guardLevel is currently " . ($_SESSION["guardLevel"] ?? "unset") . "<br>";
     }
 }

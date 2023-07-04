@@ -7,12 +7,13 @@ class Guard
 {
     private array $routes;
     private int $guardLevel = 0;
+
     public function addRoute($newRoute)
     {
         $this->routes[] = $newRoute;
     }
 
-    public function syncSessionGuardLevel() : int
+    public function syncSessionGuardLevel(): int
     {
         session_start();
         if (isset($_SESSION["guardLevel"])) {
@@ -21,7 +22,8 @@ class Guard
         return $this->guardLevel;
     }
 
-    public function setSessionGuardLevel(int $newLevel){
+    public function setSessionGuardLevel(int $newLevel)
+    {
         $this->guardLevel = $newLevel;
         $_SESSION["guardLevel"] = $newLevel;
     }
@@ -35,7 +37,6 @@ class Guard
             die("Forbidden acces");
         }
     }
-
 
 
 }

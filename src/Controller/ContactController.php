@@ -6,15 +6,15 @@ use App\Routing\Attribute\Route;
 
 class ContactController
 {
-  #[Route("/contact", name: "contact_page", guardLevel: 3)]
-  public function contact()
-  {
-    echo "Page de contact";
-  }
+    #[Route("/contact", name: "contact_page", guardLevel: 3)]
+    public function contact()
+    {
+        echo "Page de contact";
+    }
 
-  #[Route("/devis", name: "page_devis")]
-  public function devis()
-  {
-    echo "Page de devis";
-  }
+    #[Route("/devis", name: "page_devis")]
+    public function devis()
+    {
+        echo "Page de devis";
+    }
 }

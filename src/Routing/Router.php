@@ -13,34 +13,36 @@ use ReflectionMethod;
 
 class Router
 {
-  private const CONTROLLERS_GLOB_PATH = __DIR__ . "/../Controller/*Controller.php";
+    private const CONTROLLERS_GLOB_PATH = __DIR__ . "/../Controller/*Controller.php";
 
-  public function __construct(
-    private ContainerInterface $container
-  ) {
-  }
+    public function __construct(
+        private ContainerInterface $container
+    )
+    {
+    }
 
-  private array $routes = [];
+    private array $routes = [];
 
-  public function addRoute(
-    string $name,
-    string $url,
-    string $httpMethod,
-    string $controllerClass,
-    string $controllerMethod,
-    int $guardLevel = 0
-  ) {
-      $newRoute = [
-      'name' => $name,
-      'url' => $url,
-      'http_method' => $httpMethod,
-      'controller' => $controllerClass,
-      'method' => $controllerMethod,
-      'guardLevel' => $guardLevel
-    ];
-      $this->routes[] = $newRoute;
-      $this->container->get(Guard::class)->addRoute($newRoute);
-  }
+    public function addRoute(
+        string $name,
+        string $url,
+        string $httpMethod,
+        string $controllerClass,
+        string $controllerMethod,
+        int    $guardLevel = 0
+    )
+    {
+        $newRoute = [
+            'name' => $name,
+            'url' => $url,
+            'http_method' => $httpMethod,
+            'controller' => $controllerClass,
+            'method' => $controllerMethod,
+            'guardLevel' => $guardLevel
+        ];
+        $this->routes[] = $newRoute;
+        $this->container->get(Guard::class)->addRoute($newRoute);
+    }
 
     private function loadRoutes()
     {
@@ -54,113 +56,113 @@ class Router
         }
     }
 
-  public function getRoute(string $uri, string $httpMethod): ?array
-  {
-    foreach ($this->routes as $route) {
-      if ($route['url'] === parse_url($uri)['path'] && $route['http_method'] === $httpMethod) {
+    public function getRoute(string $uri, string $httpMethod): ?array
+    {
+        foreach ($this->routes as $route) {
+            if ($route['url'] === parse_url($uri)['path'] && $route['http_method'] === $httpMethod) {
 
-        return $route;
-      }
+                return $route;
+            }
+        }
+
+        return null;
     }
 
-    return null;
-  }
-
-  /**
-   * @param string $requestUri
-   * @param string $httpMethod
-   * @return void
-   * @throws RouteNotFoundException
-   */
-  public function execute(string $requestUri, string $httpMethod)
-  {
-    $route = $this->getRoute($requestUri, $httpMethod);
-    if ($route === null) {
-      throw new RouteNotFoundException($requestUri, $httpMethod);
-    }
+    /**
+     * @param string $requestUri
+     * @param string $httpMethod
+     * @return void
+     * @throws RouteNotFoundException
+     */
+    public function execute(string $requestUri, string $httpMethod)
+    {
+        $route = $this->getRoute($requestUri, $httpMethod);
+        if ($route === null) {
+            throw new RouteNotFoundException($requestUri, $httpMethod);
+        }
 
         $controllerClass = $route['controller'];
-        if($this->container->has(Guard::class)) {
+        if ($this->container->has(Guard::class)) {
             $guard = $this->container->get(Guard::class);
             $guard->check($route);
         }
 
         $method = $route['method'];
 
-    $controllerInstance = new $controllerClass($this->container);
+        $controllerInstance = new $controllerClass($this->container);
 
-    $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
-    echo $controllerInstance->$method(...$controllerParams);
-  }
-
-  /**
-   * Get an array containing services instances guessed from method signature
-   *
-   * @param string $method Format : FQCN::method
-   * @return array The services to inject
-   */
-  private function getMethodParams(string $method): array
-  {
-    $params = [];
-
-    try {
-      $methodInfos = new ReflectionMethod($method);
-    } catch (ReflectionException $e) {
-      return [];
-    }
-    $methodParams = $methodInfos->getParameters();
-
-    foreach ($methodParams as $methodParam) {
-      $paramType = $methodParam->getType();
-      $paramTypeName = $paramType->getName();
-      $params[] = $this->container->get($paramTypeName);
+        $controllerParams = $this->getMethodParams($controllerClass . '::' . $method);
+        echo $controllerInstance->$method(...$controllerParams);
     }
 
-    return $params;
-  }
+    /**
+     * Get an array containing services instances guessed from method signature
+     *
+     * @param string $method Format : FQCN::method
+     * @return array The services to inject
+     */
+    private function getMethodParams(string $method): array
+    {
+        $params = [];
 
-  public function registerRoutes(): void
-  {
-      /*CUSTOM ROUTES*/
-      $this->loadRoutes();
+        try {
+            $methodInfos = new ReflectionMethod($method);
+        } catch (ReflectionException $e) {
+            return [];
+        }
+        $methodParams = $methodInfos->getParameters();
 
-
-    // Explorer le dossier des classes de contrôleurs
-    // Pour chacun d'eux, enregistrer les méthodes
-    // donc les contrôleurs portant un attribut Route
-    $classNames = Filesystem::getClassNames(self::CONTROLLERS_GLOB_PATH);
-
-    foreach ($classNames as $class) {
-      $fqcn = "App\\Controller\\" . $class;
-      $classInfos = new ReflectionClass($fqcn);
-
-      if ($classInfos->isAbstract()) {
-        continue;
-      }
-
-      $methods = $classInfos->getMethods(ReflectionMethod::IS_PUBLIC);
-
-      foreach ($methods as $method) {
-        if ($method->isConstructor()) {
-          continue;
+        foreach ($methodParams as $methodParam) {
+            $paramType = $methodParam->getType();
+            $paramTypeName = $paramType->getName();
+            $params[] = $this->container->get($paramTypeName);
         }
 
-        $attributes = $method->getAttributes(Route::class);
-
-        if (!empty($attributes)) {
-          $routeAttribute = $attributes[0];
-          /** @var Route $routeAttribute */
-          $routeInstance = $routeAttribute->newInstance();
-          $this->addRoute(
-            $routeInstance->getName(),
-            $routeInstance->getPath(),
-            $routeInstance->getHttpMethod(),
-            $fqcn,
-            $method->getName(),
-            $routeInstance->getGuardLevel()
-          );
-        }
-      }
+        return $params;
     }
-  }
+
+    public function registerRoutes(): void
+    {
+        /*CUSTOM ROUTES*/
+        $this->loadRoutes();
+
+
+        // Explorer le dossier des classes de contrôleurs
+        // Pour chacun d'eux, enregistrer les méthodes
+        // donc les contrôleurs portant un attribut Route
+        $classNames = Filesystem::getClassNames(self::CONTROLLERS_GLOB_PATH);
+
+        foreach ($classNames as $class) {
+            $fqcn = "App\\Controller\\" . $class;
+            $classInfos = new ReflectionClass($fqcn);
+
+            if ($classInfos->isAbstract()) {
+                continue;
+            }
+
+            $methods = $classInfos->getMethods(ReflectionMethod::IS_PUBLIC);
+
+            foreach ($methods as $method) {
+                if ($method->isConstructor()) {
+                    continue;
+                }
+
+                $attributes = $method->getAttributes(Route::class);
+
+                if (!empty($attributes)) {
+                    $routeAttribute = $attributes[0];
+                    /** @var Route $routeAttribute */
+                    $routeInstance = $routeAttribute->newInstance();
+                    $this->addRoute(
+                        $routeInstance->getName(),
+                        $routeInstance->getPath(),
+                        $routeInstance->getHttpMethod(),
+                        $fqcn,
+                        $method->getName(),
+                        $routeInstance->getGuardLevel()
+                    );
+                }
+            }
+        }
+    }
 }
