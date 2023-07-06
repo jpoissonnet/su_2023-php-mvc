@@ -71,4 +71,7 @@ $serviceContainer
 ```
 
 ### Utilisation du Guard
-// TODO
+Au niveau de l'attribut des routes dans les controller on peut passer une propriété `guardLevel` avec un nombre (par défaut il est à 0) pour définir un niveau d'accès. On peut ensuite interagir avec la propriété stockée dans la superglobale 
+```php 
+$_SESSION['guardLevel']
+```
