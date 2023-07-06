@@ -1,3 +1,4 @@
 <?php
+session_start();
 
-echo "USER PAGE";
+echo $_SESSION["guardLevel"] = $_REQUEST["guardLevel"];

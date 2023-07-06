@@ -26,12 +26,24 @@ composer start
 
 Le cours complet se trouve à [cette adresse](https://ld-web.github.io/su-2023-php-mvc-course/).
 
-## Utilisation du Routage par Dossier
- 
-Le Routage par Dossier est un moyen pratique d'organiser les routes d'une application PHP MVC, similaire à Next.js. Cette approche permet d'allouer automatiquement des routes en fonction de la structure des dossiers et fichiers présents dans le répertoire "pages". Voici comment vous pouvez utiliser cette fonctionnalité :
+## Routage par Dossier
+
+Nous avons implémenté le routage par dossier copié tout droit de Next.js, toutefois, nous avons pas implémenté le routage dynamique ainsi que la structure en ``app`` qui va avec. Notre version est clairement meilleure.
+
+### Configuration du Routeur
+
+Avant de pouvoir utiliser le routeur par dossier, il y a une petite configuration à faire.
+
+```php
+$router = new Router($serviceContainer);
+$router->registerRoutes();
+```
+
+Il faut initaliser le Router au sein de l'index.php où tous les services sont initialisées. et appeler la fonction permettant l'initialisation des routes comme ci-dessus.
+
 ### Structure des fichiers
 
-Assurez-vous d'avoir une structure de fichiers similaire à celle-ci :
+Pour que le routage par dossier fonctionne, il faut créer les fichier dans le dossier ``pages``. Le reste du projet peut être organisé à sa guise, il n'influt pas sur le fonctionnement du routage.
 
 ```markdown
 - app
@@ -40,49 +52,23 @@ Assurez-vous d'avoir une structure de fichiers similaire à celle-ci :
 - pages
     - accueil.php
     - about.php
-    - products
-        - index.php
-        - details.php
     - contact.php
 ```
+Dans cet exemple, nous avons quelques fichiers qui se trouvent dans le dossier pages. Si nous voulions accéder à la page ``about.php``, il faudrait taper sur la route ``/about`` du site.
 
-Dans cet exemple, nous avons un répertoire "pages" contenant les fichiers PHP correspondant à chaque page de votre application. Les sous-dossiers peuvent également être utilisés pour organiser les pages liées à un même domaine (par exemple, les pages relatives aux produits).
-### Configuration du Routeur
+## Guard
 
-Pour commencer à utiliser le Routage par Dossier, vous devez configurer le Routeur de la manière suivante :
+Nous avons implémenté un système de Guard qui permet de protéger les routes, avec des niveaux d'accès différents. Pour ne pas changer à la règle, cette fonctionnalié est inspirée de Angular et bien entendu, la notre est meilleure.
 
-1. Incluez la classe Router dans votre application PHP.
+### Configuration du Guard
 
-2. Créez une instance du Routeur en lui fournissant l'objet Environment de Twig (ou tout autre moteur de templates que vous utilisez) :
-
-```php
-    use App\Routing\Router;
-    use Twig\Environment;
-
-    $twig = new Environment(/* Configurer votre moteur de templates Twig ici */);
-    $router = new Router($twig);
-```
-
-3. Le Routeur chargera automatiquement les routes en analysant les fichiers présents dans le répertoire "pages". Chaque fichier PHP correspondra à une route avec un URL basé sur la structure des dossiers. Par exemple, le fichier about.php sera accessible à l'URL /about.
-
-### Utilisation des routes
-
-Une fois que le Routeur est configuré, vous pouvez utiliser les routes générées :
-
-   - Accédez à une page spécifique : Vous pouvez accéder à une page spécifique en utilisant l'URL correspondante à son fichier dans le répertoire "pages". Par exemple, pour accéder à la page "À propos", vous pouvez visiter l'URL /about.
-
-   - Organisation des sous-dossiers : Si vous avez des sous-dossiers dans le répertoire "pages", ils seront reflétés dans l'URL. Par exemple, le fichier details.php dans le dossier "products" sera accessible à l'URL /products/details.
-
-   - Gestion des méthodes HTTP : Par défaut, les routes sont configurées pour la méthode HTTP GET. Vous pouvez modifier la méthode HTTP en mettant à jour les paramètres lors de l'ajout d'une route avec la méthode addRoute() du Routeur.
+Pour utiliser le Guard, il faut l'initialiser dans le fichier ``index.php``.
 
 ```php
-    $router->addRoute('route_name', '/path', 'POST', 'ControllerClass', 'methodName');
+$serviceContainer
+    ->// ...
+    ->set(Guard::class, new Guard());
 ```
 
-- Paramètres dynamiques : Si vous avez des routes nécessitant des paramètres dynamiques (par exemple, un ID de produit dans l'URL /products/123), vous devrez ajouter ces routes manuellement en utilisant la méthode addRoute() du Routeur.
-
-- Gestion des erreurs : Si une URL demandée ne correspond à aucune route configurée, vous pouvez définir un comportement personnalisé pour gérer cette situation (par exemple, afficher une page d'erreur 404).
-
-- Assurez-vous d'adapter la structure des fichiers et le comportement du Routeur en fonction des besoins spécifiques de votre application.
-
-C'est tout ! Vous pouvez maintenant utiliser le Routage par Dossier dans votre application PHP MVC pour organiser et accéder facilement aux différentes pages.
+### Utilisation du Guard
+// TODO
